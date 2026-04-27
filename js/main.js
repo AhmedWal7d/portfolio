@@ -1,14 +1,15 @@
 (function ($) {
     "use strict";
 
-    // Navbar on scrolling
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 200) {
-            $('.navbar').fadeIn('slow').css('display', 'flex');
+    // Navbar: always visible; glass style after scroll
+    $('.navbar').css('display', 'flex');
+    $(window).on('scroll', function () {
+        if ($(this).scrollTop() > 48) {
+            $('.navbar').addClass('navbar-scrolled');
         } else {
-            $('.navbar').fadeOut('slow').css('display', 'none');
+            $('.navbar').removeClass('navbar-scrolled');
         }
-    });
+    }).trigger('scroll');
 
 
     // Smooth scrolling on the navbar links
@@ -28,16 +29,49 @@
     });
 
 
-    // Typed Initiate
-    if ($('.typed-text-output').length == 1) {
-        var typed_strings = $('.typed-text').text();
-        var typed = new Typed('.typed-text-output', {
-            strings: typed_strings.split(', '),
-            typeSpeed: 100,
-            backSpeed: 20,
-            smartBackspace: false,
+    // Typed: يبدأ بعد انتهاء دخول الهيرو حتى النص يكون ظاهراً
+    function initHeroTyped() {
+        if ($('.typed-text-output').length !== 1) {
+            return;
+        }
+        var typed_strings = $('.typed-text').text().trim();
+        var parts = typed_strings.indexOf('|') >= 0
+            ? typed_strings.split(/\s*\|\s*/)
+            : typed_strings.split(/\s*,\s*/);
+        parts = parts.map(function (s) { return s.trim(); }).filter(Boolean);
+        new Typed('.typed-text-output', {
+            strings: parts.length ? parts : [typed_strings],
+            typeSpeed: 78,
+            backSpeed: 42,
+            backDelay: 1800,
+            startDelay: 120,
+            smartBackspace: true,
             loop: true
         });
+    }
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+        initHeroTyped();
+    } else {
+        setTimeout(initHeroTyped, 560);
+    }
+
+    // Section fade-in when scrolled into view
+    if ('IntersectionObserver' in window) {
+        var revealObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+        document.querySelectorAll('.reveal').forEach(function (el) {
+            revealObserver.observe(el);
+        });
+    } else {
+        $('.reveal').addClass('reveal-visible');
     }
 
 
@@ -47,10 +81,8 @@
         $('.btn-play').click(function () {
             $videoSrc = $(this).data("src");
         });
-        console.log($videoSrc);
-
         $('#videoModal').on('shown.bs.modal', function (e) {
-            $("#video").attr('src', $videoSrc + "?autoplay=1&amp;modestbranding=1&amp;showinfo=0");
+            $("#video").attr('src', $videoSrc + "?autoplay=1&modestbranding=1&showinfo=0");
         })
 
         $('#videoModal').on('hide.bs.modal', function (e) {
