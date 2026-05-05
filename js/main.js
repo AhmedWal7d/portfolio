@@ -41,20 +41,24 @@
         parts = parts.map(function (s) { return s.trim(); }).filter(Boolean);
         new Typed('.typed-text-output', {
             strings: parts.length ? parts : [typed_strings],
-            typeSpeed: 78,
-            backSpeed: 42,
-            backDelay: 1800,
-            startDelay: 120,
+            typeSpeed: 65,
+            backSpeed: 50,
+            backDelay: 480,
+            startDelay: 0,
             smartBackspace: true,
-            loop: true
+            loop: true,
+            // مهم: الافتراضي html فيعتبر & بداية entity فيتعطل عند "Next.js & …"
+            contentType: null
         });
     }
 
+    // يبدأ بعد انتهاء أنيميشن .hero-enter--3 (تأخير + مدة ≈ 280ms + 700ms)
+    var heroTypedDelayMs = 1050;
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) {
         initHeroTyped();
     } else {
-        setTimeout(initHeroTyped, 560);
+        setTimeout(initHeroTyped, heroTypedDelayMs);
     }
 
     // Section fade-in when scrolled into view
@@ -88,16 +92,6 @@
         $('#videoModal').on('hide.bs.modal', function (e) {
             $("#video").attr('src', $videoSrc);
         })
-    });
-
-
-    // Scroll to Bottom
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 100) {
-            $('.scroll-to-bottom').fadeOut('slow');
-        } else {
-            $('.scroll-to-bottom').fadeIn('slow');
-        }
     });
 
 
